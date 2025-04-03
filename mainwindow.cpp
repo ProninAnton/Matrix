@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include "iostream"
 #include <QMessageBox>
-#include <QDebug>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -46,41 +45,51 @@ void MainWindow::on_spinBox_MtrxBCol_valueChanged(int arg1)
 {
     ui->tableWidget_MtrxB->setColumnCount(arg1);
 }
-
+// Выполнение операций с матрицами
 void MainWindow::on_pushButton_Count_clicked()
 {
-    // Считывание матрицы A
     int rowCountA = ui->tableWidget_MtrxA->rowCount();
     int colCountA = ui->tableWidget_MtrxA->columnCount();
+    int rowCountB = ui->tableWidget_MtrxB->rowCount();
+    int colCountB = ui->tableWidget_MtrxB->columnCount();
+    if ((ui->comboBox_Operation->currentText() == "+" && (rowCountA != rowCountB || colCountA != colCountB)) ||
+            (ui->comboBox_Operation->currentText() == "*" && (rowCountB != colCountA))) {
+        QMessageBox::warning(this, "Невозможная операция!",
+                             "Не подходящие размеры матрицы для данной операции.",QMessageBox::Ok);
+        return;
+    }
+    // Считывание матрицы A
+
     int *mtrxA[rowCountA];
     for (int i = 0; i < rowCountA; ++i) {
         mtrxA[i] = new int[ui->tableWidget_MtrxA->columnCount()];
     }
     for (int i = 0; i < rowCountA; ++i) {
         for (int j = 0; j < colCountA; ++j) {
-            mtrxA[i][j] = ui->tableWidget_MtrxA->item(i, j)->text().toInt();
+            if (ui->tableWidget_MtrxA->item(i, j)->text().isNull())
+                mtrxA[i][j] = 0;
+            else
+                mtrxA[i][j] = ui->tableWidget_MtrxA->item(i, j)->text().toInt();
         }
     }
     // Считывание матрицы B
-    int rowCountB = ui->tableWidget_MtrxB->rowCount();
-    int colCountB = ui->tableWidget_MtrxB->columnCount();
+
     int *mtrxB[rowCountB];
     for (int i = 0; i < rowCountB; ++i) {
         mtrxB[i] = new int[ui->tableWidget_MtrxB->columnCount()];
     }
     for (int i = 0; i < rowCountB; ++i) {
         for (int j = 0; j < colCountB; ++j) {
+            if (ui->tableWidget_MtrxB->item(i, j)->text().isNull())
+                mtrxB[i][j] = 0;
+            else
             mtrxB[i][j] = ui->tableWidget_MtrxB->item(i, j)->text().toInt();
         }
     }
+
+    int **mtrxC = new int*[rowCountA];
     // Операция сложения
     if (ui->comboBox_Operation->currentText() == "+") {
-        if (rowCountA != rowCountB || colCountA != colCountB) {
-            QMessageBox::warning(this, "Невозможная операция!",
-                                 "Не подходящие размеры матрицы для данной операции.",QMessageBox::Ok);
-            return;
-        }
-        int **mtrxC = new int*[rowCountA];
         for (int i = 0; i < rowCountA; ++i) {
             mtrxC[i] = new int[colCountA];
         }
@@ -89,20 +98,12 @@ void MainWindow::on_pushButton_Count_clicked()
                 mtrxC[i][j] = mtrxA[i][j] + mtrxB[i][j];
             }
         }
-         fillResultsInTable(mtrxC);
     }
     // Операция умножения
     else {
-        if (colCountA != rowCountB) {
-            QMessageBox::warning(this, "Невозможная операция!",
-                                  "Не подходящие размеры матрицы для данной операции.",QMessageBox::Ok);
-             return;
+        for (int i = 0; i < colCountB; ++i) {
+            mtrxC[i] = new int[colCountB];
         }
-        int *mtrxC[rowCountA];
-        for (int i = 0; i < rowCountB; ++i) {
-            mtrxC[i] = new int[rowCountA];
-        }
-
         for (int i = 0; i < rowCountA; ++i) {
             for (int j = 0; j < colCountB; ++j) {
                 mtrxC[i][j] = 0;
@@ -111,11 +112,23 @@ void MainWindow::on_pushButton_Count_clicked()
                 }
             }
         }
-        fillResultsInTable(mtrxC);
     }
+    fillResultsInTable(mtrxC);
+    //Очистка памяти (теперь полностью)
+    for (int i = 0; i < rowCountA; ++i) {
+        delete [] mtrxC[i];
+    }
+    delete [] *mtrxC;
 
-    delete *mtrxA;
-    delete *mtrxB;
+    for (int i = 0; i < rowCountA; ++i) {
+        delete [] mtrxA[i];
+    }
+    delete [] *mtrxA;
+
+    for (int i = 0; i < rowCountB; ++i) {
+        delete [] mtrxB[i];
+    }
+    delete [] *mtrxB;
 }
 // Запись результата
 void MainWindow::fillResultsInTable(int **massiv)
