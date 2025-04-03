@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <memory>
+#include "matrix.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,7 +29,7 @@ private slots:
 
     void on_pushButton_Count_clicked();
 
-    void fillResultsInTable( std::shared_ptr<int*[]> massiv);
+    void fillResultsInTable(std::shared_ptr<int*[]> massiv);
 
 private:
     Ui::MainWindow *ui;
