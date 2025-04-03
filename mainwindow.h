@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -27,7 +28,7 @@ private slots:
 
     void on_pushButton_Count_clicked();
 
-    void fillResultsInTable( int** massiv);
+    void fillResultsInTable( std::shared_ptr<int*[]> massiv);
 
 private:
     Ui::MainWindow *ui;

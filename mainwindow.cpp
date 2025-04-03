@@ -3,7 +3,6 @@
 #include "iostream"
 #include <QMessageBox>
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -59,10 +58,9 @@ void MainWindow::on_pushButton_Count_clicked()
         return;
     }
     // Считывание матрицы A
-
-    int *mtrxA[rowCountA];
+    std::shared_ptr<int*[]> mtrxA {new int*[rowCountA]};
     for (int i = 0; i < rowCountA; ++i) {
-        mtrxA[i] = new int[ui->tableWidget_MtrxA->columnCount()];
+        mtrxA[i] = new int[colCountA];
     }
     for (int i = 0; i < rowCountA; ++i) {
         for (int j = 0; j < colCountA; ++j) {
@@ -73,10 +71,9 @@ void MainWindow::on_pushButton_Count_clicked()
         }
     }
     // Считывание матрицы B
-
-    int *mtrxB[rowCountB];
+    std::shared_ptr<int*[]> mtrxB {new int*[rowCountB]};
     for (int i = 0; i < rowCountB; ++i) {
-        mtrxB[i] = new int[ui->tableWidget_MtrxB->columnCount()];
+        mtrxB[i] = new int[colCountB];
     }
     for (int i = 0; i < rowCountB; ++i) {
         for (int j = 0; j < colCountB; ++j) {
@@ -87,7 +84,7 @@ void MainWindow::on_pushButton_Count_clicked()
         }
     }
 
-    int **mtrxC = new int*[rowCountA];
+    std::shared_ptr<int*[]> mtrxC {new int*[rowCountA]};
     // Операция сложения
     if (ui->comboBox_Operation->currentText() == "+") {
         for (int i = 0; i < rowCountA; ++i) {
@@ -114,24 +111,10 @@ void MainWindow::on_pushButton_Count_clicked()
         }
     }
     fillResultsInTable(mtrxC);
-    //Очистка памяти (теперь полностью)
-    for (int i = 0; i < rowCountA; ++i) {
-        delete [] mtrxC[i];
-    }
-    delete [] *mtrxC;
-
-    for (int i = 0; i < rowCountA; ++i) {
-        delete [] mtrxA[i];
-    }
-    delete [] *mtrxA;
-
-    for (int i = 0; i < rowCountB; ++i) {
-        delete [] mtrxB[i];
-    }
-    delete [] *mtrxB;
 }
+
 // Запись результата
-void MainWindow::fillResultsInTable(int **massiv)
+void MainWindow::fillResultsInTable(std::shared_ptr<int *[]> massiv)
 {
     ui->tableWidget_Result->setRowCount(ui->spinBox_MtrxARow->value());
     ui->tableWidget_Result->setColumnCount(ui->spinBox_MtrxBCol->value());
